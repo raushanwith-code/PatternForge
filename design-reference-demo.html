@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PatternForge // DSA Nexus 2099</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+  :root{
+    --void:#05060A; --surface:#0B0D14; --ink:#F5F7FF; --muted:#8892B0;
+    --violet:#7C5CFF; --violet-soft:#9C87FF; --cyan:#22D3EE; --magenta:#FF3EA5; --lime:#B4FF6B;
+    --glass-border: rgba(255,255,255,0.09);
+    --glass-bg: rgba(255,255,255,0.045);
+    --glass-bg-strong: rgba(255,255,255,0.07);
+  }
+  html[data-theme="light"]{
+    --void:#F3F1FB; --surface:#FFFFFF; --ink:#12101C; --muted:#5B5A70;
+    --glass-border: rgba(20,15,50,0.10);
+    --glass-bg: rgba(255,255,255,0.55);
+    --glass-bg-strong: rgba(255,255,255,0.75);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--void); color:var(--ink); font-family:'Inter',sans-serif;
+    overflow-x:hidden; min-height:100vh; position:relative; transition:background .5s ease,color .5s ease;
+  }
+  @media(pointer:fine){ body{ cursor:none; } a,button,.card,.check,.toggle,.social-btn,.close-x{ cursor:none; } }
+  .display{font-family:'Space Grotesk',sans-serif;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--violet),var(--cyan));border-radius:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+
+  /* ---------- custom cursor (simple) ---------- */
+  .cursor-dot{
+    position:fixed; top:0; left:0; width:16px; height:16px; border-radius:50%; pointer-events:none; z-index:9999;
+    background:radial-gradient(circle, rgba(34,211,238,.9), rgba(124,92,255,.35) 60%, transparent 75%);
+    box-shadow:0 0 14px 2px rgba(34,211,238,.35);
+    transition:transform .15s ease;
+  }
+
+  /* ---------- aurora background ---------- */
+  .aurora{position:fixed; inset:0; z-index:-1; overflow:hidden; background:var(--void); transition:background .5s ease;}
+  .grid-lines{
+    position:absolute; inset:0; opacity:.55;
+    background-image:linear-gradient(rgba(130,120,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(130,120,255,.06) 1px,transparent 1px);
+    background-size:42px 42px;
+    -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 40%,transparent 100%);
+            mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 40%,transparent 100%);
+  }
+  .blob{position:absolute; border-radius:50%; filter:blur(100px);}
+  .b1{top:-160px;left:-160px;width:520px;height:520px;background:rgba(124,92,255,.4);animation:pulseGlow 3.2s ease-in-out infinite;}
+  .b2{top:30%;right:-140px;width:480px;height:480px;background:rgba(34,211,238,.3);animation:floatSlow 14s ease-in-out infinite;}
+  .b3{bottom:-160px;left:22%;width:560px;height:560px;background:rgba(255,62,165,.25);animation:floatFast 9s ease-in-out infinite;}
+  .b4{top:60%;left:55%;width:380px;height:380px;background:rgba(180,255,107,.16);animation:floatSlow 18s ease-in-out infinite reverse;}
+  .vignette{position:absolute;inset:0; box-shadow:inset 0 0 220px 60px var(--void); transition:box-shadow .5s ease;}
+  @keyframes pulseGlow{0%,100%{opacity:.55}50%{opacity:.9}}
+  @keyframes floatSlow{0%,100%{transform:translateY(0) translateX(0)}50%{transform:translateY(-22px) translateX(10px)}}
+  @keyframes floatFast{0%,100%{transform:translateY(0) translateX(0)}50%{transform:translateY(-18px) translateX(-14px)}}
+
+  /* ---------- glass ---------- */
+  .glass{background:var(--glass-bg); border:1px solid var(--glass-border); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%); transition:background .4s ease,border-color .4s ease;}
+  .glass-strong{background:var(--glass-bg-strong); border:1px solid var(--glass-border); backdrop-filter:blur(24px) saturate(160%); -webkit-backdrop-filter:blur(24px) saturate(160%); transition:background .4s ease;}
+  .text-gradient{background:linear-gradient(90deg,#9C87FF,#22D3EE 55%,#FF3EA5); -webkit-background-clip:text; background-clip:text; color:transparent;}
+
+  /* ---------- layout ---------- */
+  .wrap{width:94%; max-width:1180px; margin:0 auto;}
+  nav.top{
+    position:sticky; top:16px; z-index:50; display:flex; align-items:center; justify-content:space-between;
+    padding:12px 20px; border-radius:16px; margin:16px auto 0; opacity:0; transform:translateY(-24px);
+  }
+  .brand{display:flex; align-items:center; gap:8px; text-decoration:none; color:var(--ink);}
+  .brand .mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--violet),var(--cyan)); display:flex;align-items:center;justify-content:center;color:var(--void);font-weight:700;}
+  .navlinks{display:flex; align-items:center; gap:10px;}
+  .btn{
+    font-family:'Inter',sans-serif; font-size:14px; border:none; cursor:none; border-radius:10px; padding:9px 16px;
+    display:inline-flex; align-items:center; gap:6px; text-decoration:none; transition:all .2s ease;
+  }
+  .btn-ghost{color:var(--ink); background:transparent;}
+  .btn-ghost:hover{background:rgba(130,120,255,.1);}
+  .btn-outline{color:var(--ink); background:var(--glass-bg); border:1px solid var(--glass-border);}
+  .btn-outline:hover{background:var(--glass-bg-strong);}
+  .btn-grad{color:#05060A; font-weight:500; background:linear-gradient(90deg,var(--violet),var(--cyan));}
+  .btn-grad:hover{filter:brightness(1.1);}
+  .btn-grad2{color:#05060A; font-weight:500; background:linear-gradient(90deg,var(--violet),var(--cyan),var(--magenta));}
+  .btn-grad2:hover{filter:brightness(1.1);}
+  .toggle{width:38px;height:38px;border-radius:10px;border:1px solid var(--glass-border);background:var(--glass-bg);display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .2s ease;}
+  .toggle:hover{background:var(--glass-bg-strong);}
+  .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--magenta));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;}
+
+  /* ---------- hero ---------- */
+  .hero{display:flex; gap:56px; align-items:flex-start; margin-top:88px; padding-bottom:40px; flex-wrap:wrap;}
+  .hero-left{flex:1; min-width:320px;}
+  .badge{display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:7px 16px; font-size:12px; color:var(--cyan);}
+  h1.headline{font-size:52px; line-height:1.08; letter-spacing:-.02em; margin-top:22px; font-weight:600;}
+  .hero-sub{max-width:520px; margin-top:22px; color:var(--muted); font-size:16px; line-height:1.7;}
+  .hero-ctas{display:flex; gap:12px; margin-top:30px; flex-wrap:wrap;}
+  .hero-ctas .btn{padding:13px 24px; font-size:15px;}
+  .stat-row{display:flex; gap:32px; margin-top:38px;}
+  .stat-row .num{font-size:26px; font-weight:600;}
+  .stat-row .lbl{font-size:11px; color:var(--muted); margin-top:2px;}
+
+  .terminal{
+    flex:1; min-width:320px; max-width:460px; border-radius:16px; overflow:hidden;
+    box-shadow:0 0 60px -15px rgba(124,92,255,.4);
+  }
+  .term-bar{display:flex; align-items:center; gap:6px; padding:12px 16px; border-bottom:1px solid var(--glass-border);}
+  .dot{width:10px;height:10px;border-radius:50%;}
+  .term-bar .fname{margin-left:8px; font-size:11px; color:var(--muted);}
+  .term-steps{display:flex; gap:6px; margin-left:auto;}
+  .term-steps span{width:6px;height:6px;border-radius:50%;background:var(--glass-border); transition:background .3s;}
+  .term-steps span.active{background:var(--cyan);}
+  .term-body{padding:20px; font-size:12.5px; line-height:1.7; white-space:pre-wrap; min-height:220px;}
+  .cursor{display:inline-block; width:7px; height:14px; background:var(--cyan); animation:blink 1.1s steps(1) infinite; vertical-align:-2px;}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+  /* ---------- marquee ---------- */
+  .marquee-wrap{overflow:hidden; border-top:1px solid var(--glass-border); border-bottom:1px solid var(--glass-border); padding:16px 0; margin-top:40px;}
+  .marquee{display:flex; width:max-content; gap:32px; animation:marquee 30s linear infinite; font-size:13px; color:var(--muted);}
+  .marquee span.idx{color:var(--cyan);}
+  .marquee span.sep{color:var(--glass-border);}
+  @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  .logos-strip{ text-align:center; padding:30px 0 6px; }
+  .logos-label{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.2em; margin-bottom:18px; }
+  .logos-row{ display:flex; flex-wrap:wrap; justify-content:center; gap:12px; }
+  .logo-chip{
+    display:inline-flex; align-items:center; gap:7px; padding:9px 16px; border-radius:10px;
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px; color:var(--ink);
+    opacity:0; transform:translateY(10px);
+  }
+  .logo-chip .dot{ width:7px; height:7px; border-radius:50%; }
+
+  /* ---------- sections ---------- */
+  section.block{margin-top:90px; padding-bottom:60px;}
+  .section-head{display:flex; justify-content:space-between; align-items:flex-end; gap:16px; margin-bottom:36px; flex-wrap:wrap;}
+  .eyebrow{font-size:12px; text-transform:uppercase; letter-spacing:.22em; color:var(--cyan);}
+  h2.section-title{font-size:32px; font-weight:600; margin-top:10px;}
+  .lead{max-width:640px; color:var(--muted); font-size:15.5px; line-height:1.8; margin-top:14px;}
+
+  /* why patterns feature grid */
+  .feat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px; margin-top:36px;}
+  .feat-card{border-radius:16px; padding:22px; opacity:0;}
+  .feat-card .fi{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:14px;}
+  .feat-card h4{font-size:15px; font-weight:600; margin-bottom:6px;}
+  .feat-card p{font-size:13px; color:var(--muted); line-height:1.6;}
+
+  /* how it works steps */
+  .steps{display:flex; flex-direction:column; gap:0; margin-top:40px; max-width:640px;}
+  .step-row{display:flex; gap:20px; padding:26px 0; border-bottom:1px solid var(--glass-border); opacity:0;}
+  .step-row:last-child{border-bottom:none;}
+  .step-num{flex-shrink:0; width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; color:var(--cyan);}
+  .step-txt h4{font-size:16px; font-weight:600; margin-bottom:6px;}
+  .step-txt p{font-size:13.5px; color:var(--muted); line-height:1.6;}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px;}
+  .grid{ perspective:1400px; }
+  .card{
+    position:relative; overflow:hidden; border-radius:18px; padding:24px; cursor:none;
+    transition:box-shadow .3s ease; opacity:0; transform:translateY(20px);
+    transform-style:preserve-3d; will-change:transform; isolation:isolate;
+  }
+  .card.tilting{ transition:box-shadow .3s ease; box-shadow:0 30px 60px -20px rgba(124,92,255,.45); }
+  .card::before{
+    content:""; position:absolute; inset:-1px; border-radius:18px; padding:1px; z-index:-1;
+    background:conic-gradient(from var(--ang,0deg), var(--c1), var(--c2), var(--c1));
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; opacity:.16; transition:opacity .3s;
+    animation:borderspin 6s linear infinite;
+  }
+  .card:hover::before, .card.tilting::before{ opacity:1; animation-duration:1.4s; }
+  @property --ang{ syntax:'<angle>'; inherits:false; initial-value:0deg; }
+  @keyframes borderspin{ from{--ang:0deg;} to{--ang:360deg;} }
+  .card .glow{position:absolute; top:-32px; right:-32px; width:110px; height:110px; border-radius:50%; opacity:.2; filter:blur(30px); transition:opacity .3s; transform:translateZ(20px);}
+  .card:hover .glow{opacity:.4;}
+  .card-light{
+    position:absolute; inset:0; pointer-events:none; z-index:5; opacity:0; transition:opacity .25s ease;
+    background:radial-gradient(circle 180px at var(--mx,50%) var(--my,50%), rgba(255,255,255,.16), rgba(255,255,255,0) 70%);
+    mix-blend-mode:plus-lighter;
+  }
+  html[data-theme="light"] .card-light{ mix-blend-mode:overlay; background:radial-gradient(circle 180px at var(--mx,50%) var(--my,50%), rgba(124,92,255,.35), rgba(124,92,255,0) 70%); }
+  .card.tilting .card-light{ opacity:1; }
+  .card > *{ position:relative; z-index:2; }
+  .card-orb{ position:absolute; top:24px; right:30px; width:0; height:0; z-index:3; animation:orbit 5s linear infinite; }
+  .card-orb i{
+    position:absolute; top:-12px; left:0; width:6px; height:6px; border-radius:50%;
+    background:radial-gradient(circle, #fff, var(--c1) 60%, transparent 75%); box-shadow:0 0 10px 2px var(--c1);
+  }
+  .card.tilting .card-orb{ animation-duration:1s; }
+  @keyframes orbit{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+  .card .idx{font-size:12px; color:var(--muted);}
+  .card .oscore{font-size:11px; color:var(--lime); float:right;}
+  .card h3{font-size:18px; font-weight:600; margin-top:10px;}
+  .card p{font-size:13.5px; color:var(--muted); margin-top:8px; line-height:1.6;}
+  .bar-track{height:6px; border-radius:6px; background:rgba(130,120,255,.08); margin-top:18px; overflow:hidden;}
+  .bar-fill{height:100%; border-radius:6px; width:0%; transition:width 1s cubic-bezier(.16,1,.3,1); background-size:200% 100%; animation:flow 3s linear infinite;}
+  @keyframes flow{ 0%{background-position:0% 0;} 100%{background-position:200% 0;} }
+  .card-foot{display:flex; justify-content:space-between; font-size:10px; color:var(--muted); margin-top:8px; font-family:'JetBrains Mono',monospace;}
+
+  /* ---------- locked teaser ---------- */
+  .locked-wrap{ position:relative; margin-top:36px; border-radius:20px; overflow:hidden; }
+  .ghost-grid{ filter:blur(6px) saturate(60%); opacity:.5; pointer-events:none; user-select:none; transform:scale(.98); }
+  .ghost-grid .card{ opacity:1 !important; transform:none !important; }
+  .lock-overlay{
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:32px; border-radius:20px; gap:6px;
+  }
+  .lock-icon{ font-size:30px; margin-bottom:6px; filter:drop-shadow(0 0 12px rgba(124,92,255,.6)); }
+  .lock-overlay h3{ font-size:19px; font-weight:600; font-family:'Space Grotesk',sans-serif; }
+  .lock-overlay p{ font-size:13px; color:var(--muted); margin-bottom:14px; }
+
+  /* ---------- dashboard ---------- */
+  .dash-greet h2{ margin-top:8px; }
+  .score-row{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:14px; margin-top:28px; }
+  .score-chip{ border-radius:16px; padding:20px; text-align:center; }
+  .score-chip .sc-num{ font-size:28px; font-weight:700; font-family:'Space Grotesk',sans-serif; }
+  .score-chip .sc-lbl{ font-size:11px; color:var(--muted); margin-top:4px; font-family:'JetBrains Mono',monospace; }
+  .score-chip.total .sc-num{ font-size:32px; }
+
+  .streak-card{ border-radius:20px; padding:26px; margin-top:20px; }
+  .streak-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .streak-head h3{ font-size:13px; color:var(--ink); font-weight:600; }
+  .streak-grid{ display:grid; grid-template-columns:repeat(auto-fill, 14px); grid-auto-rows:14px; gap:4px; justify-content:start; }
+  .streak-box{ width:14px; height:14px; border-radius:3px; background:rgba(130,120,255,.08); transition:transform .15s; opacity:0; transform:scale(.4); position:relative; }
+  .streak-box:hover{ transform:scale(1.25); z-index:2; }
+  .streak-box.l1{ background:rgba(180,255,107,.35); }
+  .streak-box.l2{ background:rgba(180,255,107,.62); }
+  .streak-box.l3{ background:rgba(180,255,107,.95); box-shadow:0 0 8px 1px rgba(180,255,107,.5); }
+  .streak-legend{ display:flex; align-items:center; gap:4px; margin-top:14px; font-size:10px; color:var(--muted); }
+  .streak-swatch{ width:11px; height:11px; border-radius:3px; }
+  .streak-swatch.l0{ background:rgba(130,120,255,.08); }
+  .streak-swatch.l1{ background:rgba(180,255,107,.35); }
+  .streak-swatch.l2{ background:rgba(180,255,107,.62); }
+  .streak-swatch.l3{ background:rgba(180,255,107,.95); }
+  .streak-box[data-tip]:hover::after{
+    content:attr(data-tip); position:absolute; bottom:130%; left:50%; transform:translateX(-50%);
+    background:var(--surface); border:1px solid var(--glass-border); padding:4px 8px; border-radius:6px;
+    font-size:10px; font-family:'JetBrains Mono',monospace; white-space:nowrap; color:var(--ink); z-index:10;
+  }
+  .verify-note{ margin-top:16px; text-align:center; font-size:11px; color:var(--lime); opacity:.8; }
+
+  /* ---------- problem list demo ---------- */
+  .panel{border-radius:18px; padding:24px; margin-top:16px;}
+  .panel-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+  .panel-head h3{font-size:16px; font-weight:600;}
+  .close-x{background:none; border:none; color:var(--muted); font-size:18px;}
+  .plist{list-style:none; display:flex; flex-direction:column; gap:8px;}
+  .prow{display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:12px; border:1px solid var(--glass-border); background:rgba(130,120,255,.02); transition:background .2s;}
+  .prow:hover{background:rgba(130,120,255,.06);}
+  .prow.solved{border-color:rgba(180,255,107,.25); background:rgba(180,255,107,.05);}
+  .check{width:22px;height:22px;border-radius:6px;border:1px solid var(--glass-border); flex-shrink:0; display:flex;align-items:center;justify-content:center; color:transparent; transition:all .15s;}
+  .check.on{background:var(--lime); border-color:var(--lime); color:var(--void);}
+  .check.verifying{ box-shadow:0 0 0 6px rgba(180,255,107,.25); }
+  .prow .pi{width:22px; font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace;}
+  .prow .ptitle{flex:1; font-size:14px;}
+  .prow.solved .ptitle{color:var(--muted); text-decoration:line-through; text-decoration-color:rgba(180,255,107,.5);}
+  .diff{font-size:10px; padding:3px 9px; border-radius:999px; border:1px solid; font-family:'JetBrains Mono',monospace;}
+  .diff.Easy{color:var(--lime); border-color:rgba(180,255,107,.3); background:rgba(180,255,107,.1);}
+  .diff.Medium{color:var(--cyan); border-color:rgba(34,211,238,.3); background:rgba(34,211,238,.1);}
+  .diff.Hard{color:var(--magenta); border-color:rgba(255,62,165,.3); background:rgba(255,62,165,.1);}
+  .ext{color:var(--muted); text-decoration:none; font-size:14px; padding:4px;}
+  .ext:hover{color:var(--cyan);}
+
+  footer{border-top:1px solid var(--glass-border); padding:28px 0; text-align:center; font-size:12px; color:var(--muted); font-family:'JetBrains Mono',monospace;}
+
+  /* ---------- login modal ---------- */
+  .modal-overlay{position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center; background:rgba(2,2,6,.6); backdrop-filter:blur(6px);}
+  .modal-overlay.open{display:flex;}
+  .login-card{position:relative; width:92%; max-width:400px; border-radius:20px; overflow:hidden;}
+  .login-card canvas{position:absolute; inset:0; width:100%; height:100%; opacity:.55;}
+  .login-inner{position:relative; z-index:2; padding:32px 28px; background:linear-gradient(180deg, rgba(5,6,10,.4), rgba(5,6,10,.85) 40%);}
+  html[data-theme="light"] .login-inner{background:linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.9) 40%);}
+  .login-inner h2{font-size:22px; font-weight:600; text-align:center; margin-bottom:4px;}
+  .login-inner .sub{text-align:center; font-size:13px; color:var(--muted); margin-bottom:24px;}
+  .field{margin-bottom:12px;}
+  .field label{font-size:11px; color:var(--muted); display:block; margin-bottom:6px;}
+  .field input{width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--glass-border); background:rgba(130,120,255,.06); color:var(--ink); font-size:13.5px; outline:none;}
+  .field input:focus{border-color:var(--cyan);}
+  .login-submit{width:100%; margin-top:8px; padding:12px; justify-content:center; font-size:14px;}
+  .divider{display:flex; align-items:center; gap:10px; margin:20px 0; font-size:11px; color:var(--muted);}
+  .divider::before,.divider::after{content:""; flex:1; height:1px; background:var(--glass-border);}
+  .social-row{display:flex; flex-direction:column; gap:10px;}
+  .social-btn{display:flex; align-items:center; justify-content:center; gap:10px; padding:11px; border-radius:10px; border:1px solid var(--glass-border); background:rgba(255,255,255,.04); color:var(--ink); font-size:13.5px; font-weight:500; transition:all .2s;}
+  .social-btn:hover{background:rgba(255,255,255,.09);}
+  .social-btn svg{width:16px;height:16px;}
+  .modal-switch{text-align:center; font-size:12.5px; color:var(--muted); margin-top:20px;}
+  .modal-switch a{color:var(--cyan); text-decoration:none;}
+  .modal-close{position:absolute; top:14px; right:14px; z-index:3; width:30px; height:30px; border-radius:8px; background:rgba(255,255,255,.08); border:none; color:var(--ink); font-size:15px;}
+
+  @media(max-width:720px){ h1.headline{font-size:36px;} .hero{margin-top:60px;} }
+</style>
+</head>
+<body>
+
+<div class="cursor-dot" id="cursorDot"></div>
+
+<div class="aurora">
+  <div class="grid-lines"></div>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <div class="blob b4"></div>
+  <div class="vignette"></div>
+</div>
+
+<nav class="top glass wrap" id="navbar" style="max-width:1180px;">
+  <a href="#" class="brand">
+    <span class="mark display">&lt;/&gt;</span>
+    <span class="display" style="font-weight:600; font-size:15px;">Pattern<span class="text-gradient">Forge</span></span>
+    <span class="mono" style="font-size:10px;color:var(--muted);margin-left:4px;">/2099</span>
+  </a>
+  <div class="navlinks" id="navRight">
+    <button class="toggle" id="themeToggle" title="Toggle theme">🌙</button>
+    <a class="btn btn-ghost" href="#patterns">Dashboard</a>
+    <a class="btn btn-outline" href="#" id="openLogin">Sign in</a>
+    <a class="btn btn-grad" href="#" id="openSignup">Get started</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="hero">
+    <div class="hero-left">
+      <span class="badge glass mono" id="heroBadge">✦ 25 patterns · 249 curated problems</span>
+      <h1 class="headline display" id="heroHeadline">
+        Stop grinding<br/>random problems.<br/>
+        <span class="text-gradient">Start forging patterns.</span>
+      </h1>
+      <p class="hero-sub" id="heroSub">25 core DSA patterns, each mapped to its sharpest LeetCode problems — up to 15 per pattern, 249 total. Learn the shape once, recognize it forever.</p>
+      <div class="hero-ctas" id="heroCtas">
+        <a class="btn btn-grad2" href="#" id="heroSignup">Create free account →</a>
+        <a class="btn btn-outline" href="#patterns">Browse patterns</a>
+      </div>
+      <div class="stat-row" id="heroStats">
+        <div><div class="num display">249</div><div class="lbl mono">problems</div></div>
+        <div><div class="num display">25</div><div class="lbl mono">patterns</div></div>
+        <div><div class="num display">15</div><div class="lbl mono">max / pattern</div></div>
+      </div>
+    </div>
+
+    <div class="terminal glass-strong" id="terminalBox">
+      <div class="term-bar">
+        <span class="dot" style="background:rgba(255,62,165,.7)"></span>
+        <span class="dot" style="background:rgba(180,255,107,.7)"></span>
+        <span class="dot" style="background:rgba(34,211,238,.7)"></span>
+        <span class="fname mono" id="termFileName">pick-pattern.ts</span>
+        <span class="term-steps" id="termSteps"></span>
+      </div>
+      <div class="term-body mono" id="termBody"></div>
+    </div>
+  </section>
+
+  <div class="marquee-wrap">
+    <div class="marquee mono" id="marqueeTrack"></div>
+  </div>
+
+  <div class="logos-strip">
+    <p class="logos-label mono">Curated from questions asked at</p>
+    <div class="logos-row" id="logosRow"></div>
+  </div>
+
+  <!-- WHY PATTERNS -->
+  <section class="block">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow mono">// why-patterns.md</p>
+        <h2 class="section-title display">Grinding LeetCode randomly doesn't work.</h2>
+        <p class="lead">There are 3,000+ problems on LeetCode. Nobody has time to solve them all — and they don't need to. Almost every problem is a variation of one of ~25 recurring patterns. Learn the pattern, and you can recognize it in an interview even when the problem is dressed up differently.</p>
+      </div>
+    </div>
+    <div class="feat-grid" id="featGrid">
+      <div class="feat-card glass"><div class="fi" style="background:rgba(124,92,255,.15); color:var(--violet-soft);">◆</div><h4>Pattern-first, not problem-first</h4><p>Every problem is tagged to the technique it teaches — two pointers, sliding window, backtracking — so you build transferable intuition, not memorized answers.</p></div>
+      <div class="feat-card glass"><div class="fi" style="background:rgba(34,211,238,.15); color:var(--cyan);">◆</div><h4>Curated, not exhaustive</h4><p>Up to 15 hand-picked problems per pattern — enough to internalize the shape without burning weeks on redundant repeats of the same idea.</p></div>
+      <div class="feat-card glass"><div class="fi" style="background:rgba(255,62,165,.15); color:var(--magenta);">◆</div><h4>Progress that persists</h4><p>Sign in once and every solved problem is saved to your account — pick up your prep exactly where you left off, on any device.</p></div>
+      <div class="feat-card glass"><div class="fi" style="background:rgba(180,255,107,.15); color:var(--lime);">◆</div><h4>Direct to the source</h4><p>Every problem links straight to the real LeetCode page — no paywalled clones, no rewritten prompts, the actual problem you'll see in an interview.</p></div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="block">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow mono">// how-it-works.ts</p>
+        <h2 class="section-title display">Four steps to interview-ready.</h2>
+      </div>
+    </div>
+    <div class="steps" id="stepsList">
+      <div class="step-row"><div class="step-num glass">01</div><div class="step-txt"><h4>Create your account</h4><p>Sign up with email, or continue instantly with Google, GitHub, or LinkedIn — no setup, no credit card.</p></div></div>
+      <div class="step-row"><div class="step-num glass">02</div><div class="step-txt"><h4>Pick a pattern</h4><p>Start wherever you're weakest — Two Pointers for warm-up, Dynamic Programming for the deep end.</p></div></div>
+      <div class="step-row"><div class="step-num glass">03</div><div class="step-txt"><h4>Solve, then check it off</h4><p>Open the real LeetCode problem, solve it your way, then mark it solved — your progress bar updates instantly.</p></div></div>
+      <div class="step-row"><div class="step-num glass">04</div><div class="step-txt"><h4>Watch the map fill in</h4><p>Your dashboard shows exactly which of the 25 patterns you've mastered and which still need work before interview day.</p></div></div>
+    </div>
+  </section>
+
+  <section class="block" id="patterns">
+
+    <!-- LOCKED TEASER — shown when not signed in -->
+    <div id="lockedTeaser">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow mono">// 25_patterns.locked</p>
+          <h2 class="section-title display">Don't solve 300 random LeetCode &amp; GFG questions.</h2>
+          <p class="lead">You only need <span class="text-gradient" style="font-weight:600;">25 patterns</span>, done right, to walk into any interview ready — that's it. Sign in free and unlock all 25 patterns, 249 hand-picked problems, and a dashboard that tracks every one you solve.</p>
+        </div>
+      </div>
+      <div class="locked-wrap">
+        <div class="grid ghost-grid" id="ghostGrid"></div>
+        <div class="lock-overlay glass-strong">
+          <div class="lock-icon">🔒</div>
+          <h3>25 patterns · 249 problems waiting</h3>
+          <p>Free account. No credit card. Takes 20 seconds.</p>
+          <button class="btn btn-grad2" id="unlockBtn">Unlock now →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD — shown when signed in -->
+    <div id="dashboardArea" style="display:none;">
+      <div class="dash-greet">
+        <p class="eyebrow mono">// dashboard.tsx</p>
+        <h2 class="section-title display">Hey, <span id="dashName" class="text-gradient">Raushan</span> 👋</h2>
+        <p class="lead">Here's exactly where you stand across all 25 patterns.</p>
+      </div>
+
+      <div class="score-row" id="scoreRow"></div>
+
+      <div class="streak-card glass-strong">
+        <div class="streak-head">
+          <h3 class="mono" id="streakMonthLabel">Solved this month</h3>
+          <span class="mono" id="streakTotal" style="color:var(--lime); font-size:12px;">0 problems</span>
+        </div>
+        <div class="streak-grid" id="streakGrid"></div>
+        <div class="streak-legend mono">
+          <span>Less</span>
+          <span class="streak-swatch l0"></span><span class="streak-swatch l1"></span><span class="streak-swatch l2"></span><span class="streak-swatch l3"></span>
+          <span>More</span>
+        </div>
+      </div>
+
+      <div class="section-head" style="margin-top:52px;">
+        <div>
+          <p class="eyebrow mono">const patterns = [...]</p>
+          <h2 class="section-title display">Every pattern, indexed.</h2>
+        </div>
+      </div>
+      <div class="grid" id="patternGrid"></div>
+    </div>
+  </section>
+
+  <section class="block" id="detailSection" style="display:none;">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow mono" id="detailIdx"></p>
+        <h2 class="section-title display" id="detailName"></h2>
+      </div>
+    </div>
+    <div class="panel glass-strong">
+      <div class="panel-head">
+        <h3 class="mono" id="detailProgress"></h3>
+        <button class="close-x" onclick="closeDetail()">✕</button>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="detailBar" style="background:linear-gradient(90deg,var(--violet),var(--cyan),var(--magenta));"></div></div>
+      <ul class="plist" id="problemList" style="margin-top:18px;"></ul>
+      <p class="verify-note mono">✓ marking a problem here simulates auto-verified LeetCode submission tracking</p>
+    </div>
+  </section>
+
+  <section class="block" style="margin-top:40px;">
+    <div class="glass-strong" style="border-radius:24px; padding:56px 40px; text-align:center;">
+      <p class="eyebrow mono">// ready_check.exe</p>
+      <h2 class="section-title display" style="margin-top:12px;">Your interview is closer than you think.</h2>
+      <p class="lead" style="margin:14px auto 28px; text-align:center;">Every pattern you complete here is one fewer surprise in the room. Start with the one you dread most.</p>
+      <a class="btn btn-grad2" href="#" id="ctaSignup" style="padding:14px 30px; font-size:15px;">Create free account →</a>
+    </div>
+  </section>
+
+  <footer>PatternForge — built for engineers who'd rather understand O(n) than memorize 2000 problems.</footer>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginOverlay">
+  <div class="login-card glass-strong">
+    <canvas id="spiralCanvas"></canvas>
+    <button class="modal-close" id="closeLogin">✕</button>
+    <div class="login-inner">
+      <h2 class="display" id="modalTitle">Welcome back</h2>
+      <p class="sub" id="modalSub">Sign in to pick up where you left off.</p>
+
+      <div class="social-row">
+        <button class="social-btn" onclick="fakeLogin('Google')">
+          <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.29A7.2 7.2 0 0 1 4.9 12c0-.79.14-1.56.37-2.29V6.62H1.29A11.98 11.98 0 0 0 0 12c0 1.94.46 3.77 1.29 5.38l3.98-3.09z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.94 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z"/></svg>
+          Continue with Google
+        </button>
+        <button class="social-btn" onclick="fakeLogin('GitHub')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.08 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.3 3.5.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.56 21.79 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          Continue with GitHub
+        </button>
+        <button class="social-btn" onclick="fakeLogin('LinkedIn')">
+          <svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+          Continue with LinkedIn
+        </button>
+      </div>
+
+      <div class="divider mono">OR</div>
+
+      <div class="field"><label>Email</label><input type="email" placeholder="you@domain.com" /></div>
+      <div class="field" id="nameField" style="display:none;"><label>Name</label><input type="text" placeholder="Your name" /></div>
+      <div class="field"><label>Password</label><input type="password" placeholder="••••••••" /></div>
+      <button class="btn btn-grad login-submit" id="submitLogin">Sign in</button>
+
+      <p class="modal-switch" id="modalSwitch">No account yet? <a href="#" id="switchToSignup">Create one</a></p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= THEME TOGGLE ================= */
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('click', () => {
+  const html = document.documentElement;
+  const isLight = html.getAttribute('data-theme') === 'light';
+  html.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  themeToggle.textContent = isLight ? '🌙' : '☀️';
+  gsap.fromTo('.aurora', {opacity:.4}, {opacity:1, duration:.6});
+});
+
+/* ================= CUSTOM CURSOR (simple) ================= */
+const dot = document.getElementById('cursorDot');
+if (window.matchMedia('(pointer:fine)').matches) {
+  gsap.set(dot, {xPercent:-50, yPercent:-50});
+  const dotX = gsap.quickTo(dot, 'x', {duration:.15, ease:'power3'});
+  const dotY = gsap.quickTo(dot, 'y', {duration:.15, ease:'power3'});
+  window.addEventListener('mousemove', e => { dotX(e.clientX); dotY(e.clientY); });
+  document.addEventListener('mouseover', e => {
+    if (e.target.closest('a,button,.card,.check')) gsap.to(dot, {scale:1.6, duration:.25});
+  });
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest('a,button,.card,.check')) gsap.to(dot, {scale:1, duration:.25});
+  });
+  document.addEventListener('mousedown', () => gsap.to(dot, {scale:.7, duration:.15}));
+  document.addEventListener('mouseup', () => gsap.to(dot, {scale:1, duration:.2}));
+} else {
+  dot.style.display = 'none';
+  document.body.style.cursor = 'auto';
+}
+
+/* ================= HERO ENTRANCE ================= */
+gsap.to('#navbar', {opacity:1, y:0, duration:.6, ease:'power3.out', delay:.1});
+gsap.to('#heroBadge', {opacity:1, y:0, duration:.6, ease:'power3.out', delay:.2});
+gsap.to('#heroHeadline', {opacity:1, y:0, duration:.7, ease:'power3.out', delay:.32});
+gsap.to('#heroSub', {opacity:1, y:0, duration:.7, ease:'power3.out', delay:.44});
+gsap.to('#heroCtas', {opacity:1, y:0, duration:.7, ease:'power3.out', delay:.56});
+gsap.to('#heroStats', {opacity:1, y:0, duration:.7, ease:'power3.out', delay:.68});
+gsap.set(['#heroBadge','#heroHeadline','#heroSub','#heroCtas','#heroStats'], {opacity:0, y:24});
+gsap.to(['#heroBadge','#heroHeadline','#heroSub','#heroCtas','#heroStats'], {opacity:1, y:0, stagger:.12, duration:.7, ease:'power3.out', delay:.15});
+gsap.set('#navbar', {opacity:0, y:-24});
+gsap.to('#navbar', {opacity:1, y:0, duration:.6, ease:'power3.out', delay:.05});
+gsap.fromTo('#terminalBox', {opacity:0, x:40, rotate:-2}, {opacity:1, x:0, rotate:0, duration:.8, ease:'power3.out', delay:.4});
+
+/* ================= STEP-BY-STEP TYPING TERMINAL ================= */
+const termSteps = [
+  { file:"pick-pattern.ts", code:
+`// step 1 — pick a pattern
+const pattern = patterns[4];
+const { name, problems } = pattern;
+
+console.log(name);
+> "Cyclic Sort"` },
+  { file:"solve-loop.ts", code:
+`// step 2 — work the set
+for (const p of problems) {
+  const solved = solve(p.slug);
+  markComplete(p.slug, solved);
+}
+> 6 / 10 marked complete` },
+  { file:"track-progress.ts", code:
+`// step 3 — watch it compound
+const progress = totalSolved / 249;
+
+render(progressBar, progress);
+> 74 problems solved · 30%` },
+];
+let stepIndex = 0;
+const termBody = document.getElementById('termBody');
+const termFileName = document.getElementById('termFileName');
+const termStepsEl = document.getElementById('termSteps');
+termSteps.forEach((_, i) => {
+  const dotEl = document.createElement('span');
+  if (i === 0) dotEl.className = 'active';
+  termStepsEl.appendChild(dotEl);
+});
+
+function colorize(code){
+  return code
+    .replace(/(\/\/.*)/g, '<span style="color:var(--muted)">$1</span>')
+    .replace(/\b(const|for|of)\b/g, '<span style="color:var(--violet-soft)">$1</span>')
+    .replace(/\b(console|render)\b/g, '<span style="color:var(--cyan)">$1</span>')
+    .replace(/^(&gt;.*|>.*)$/gm, '<span style="color:var(--muted)">$1</span>');
+}
+
+function typeStep(){
+  const step = termSteps[stepIndex];
+  termFileName.textContent = step.file;
+  [...termStepsEl.children].forEach((d,i) => d.className = i === stepIndex ? 'active' : '');
+  const raw = step.code;
+  const counter = { n: 0 };
+  gsap.to(counter, {
+    n: raw.length,
+    duration: raw.length * 0.018,
+    ease: 'none',
+    onUpdate: () => {
+      const shown = raw.slice(0, Math.floor(counter.n));
+      termBody.innerHTML = colorize(shown) + '<span class="cursor"></span>';
+    },
+    onComplete: () => {
+      gsap.delayedCall(1.6, () => {
+        stepIndex = (stepIndex + 1) % termSteps.length;
+        typeStep();
+      });
+    }
+  });
+}
+gsap.delayedCall(1.1, typeStep);
+
+/* ================= MARQUEE + PATTERN DATA ================= */
+const patterns = [
+  {id:"two-pointers", idx:0, name:"Two Pointers", tagline:"Converge two indices to cut O(n\u00b2) down to O(n).", color:["#7C5CFF","#22D3EE"], problems:[
+    ["Two Sum II - Input Array Is Sorted","two-sum-ii-input-array-is-sorted","Easy"],["Valid Palindrome","valid-palindrome","Easy"],
+    ["Remove Duplicates from Sorted Array","remove-duplicates-from-sorted-array","Easy"],["Container With Most Water","container-with-most-water","Medium"],
+    ["3Sum","3sum","Medium"],["Sort Colors","sort-colors","Medium"],["Trapping Rain Water","trapping-rain-water","Hard"],
+    ["4Sum","4sum","Medium"],["Squares of a Sorted Array","squares-of-a-sorted-array","Easy"],["Boats to Save People","boats-to-save-people","Medium"]]},
+  {id:"sliding-window", idx:1, name:"Sliding Window", tagline:"Grow and shrink a window instead of recomputing from scratch.", color:["#22D3EE","#FF3EA5"], problems:[
+    ["Maximum Average Subarray I","maximum-average-subarray-i","Easy"],["Longest Substring Without Repeating Characters","longest-substring-without-repeating-characters","Medium"],
+    ["Minimum Size Subarray Sum","minimum-size-subarray-sum","Medium"],["Longest Repeating Character Replacement","longest-repeating-character-replacement","Medium"],
+    ["Permutation in String","permutation-in-string","Medium"],["Find All Anagrams in a String","find-all-anagrams-in-a-string","Medium"],
+    ["Fruit Into Baskets","fruit-into-baskets","Medium"],["Minimum Window Substring","minimum-window-substring","Hard"],
+    ["Sliding Window Maximum","sliding-window-maximum","Hard"],["Max Consecutive Ones III","max-consecutive-ones-iii","Medium"]]},
+  {id:"fast-slow-pointers", idx:2, name:"Fast & Slow Pointers", tagline:"Detect cycles and midpoints without extra memory.", color:["#FF3EA5","#7C5CFF"], problems:[
+    ["Linked List Cycle","linked-list-cycle","Easy"],["Linked List Cycle II","linked-list-cycle-ii","Medium"],["Middle of the Linked List","middle-of-the-linked-list","Easy"],
+    ["Palindrome Linked List","palindrome-linked-list","Easy"],["Happy Number","happy-number","Easy"],["Reorder List","reorder-list","Medium"],
+    ["Find the Duplicate Number","find-the-duplicate-number","Medium"],["Remove Duplicates from Sorted List","remove-duplicates-from-sorted-list","Easy"],
+    ["Circular Array Loop","circular-array-loop","Medium"],["Delete the Middle Node of a Linked List","delete-the-middle-node-of-a-linked-list","Medium"]]},
+  {id:"merge-intervals", idx:3, name:"Merge Intervals", tagline:"Sort by start, sweep once, merge on overlap.", color:["#7C5CFF","#B4FF6B"], problems:[
+    ["Merge Intervals","merge-intervals","Medium"],["Insert Interval","insert-interval","Medium"],["Non-overlapping Intervals","non-overlapping-intervals","Medium"],
+    ["Meeting Rooms II","meeting-rooms-ii","Medium"],["Interval List Intersections","interval-list-intersections","Medium"],
+    ["Minimum Number of Arrows to Burst Balloons","minimum-number-of-arrows-to-burst-balloons","Medium"],["My Calendar I","my-calendar-i","Medium"],
+    ["Car Pooling","car-pooling","Medium"],["Remove Covered Intervals","remove-covered-intervals","Medium"],["Meeting Rooms","meeting-rooms","Easy"]]},
+  {id:"cyclic-sort", idx:4, name:"Cyclic Sort", tagline:"Numbers in range [1,n] belong at index n-1 \u2014 place them there.", color:["#22D3EE","#B4FF6B"], problems:[
+    ["Missing Number","missing-number","Easy"],["Find All Numbers Disappeared in an Array","find-all-numbers-disappeared-in-an-array","Easy"],
+    ["Set Mismatch","set-mismatch","Easy"],["First Missing Positive","first-missing-positive","Hard"],["Find All Duplicates in an Array","find-all-duplicates-in-an-array","Medium"],
+    ["Kth Missing Positive Number","kth-missing-positive-number","Easy"],["Sort Array By Parity","sort-array-by-parity","Easy"],
+    ["Wiggle Sort II","wiggle-sort-ii","Medium"],["Third Maximum Number","third-maximum-number","Easy"],["Couples Holding Hands","couples-holding-hands","Hard"]]},
+  {id:"linked-list-reversal", idx:5, name:"In-place LinkedList Reversal", tagline:"Rewire next pointers in a single pass, zero extra space.", color:["#FF3EA5","#22D3EE"], problems:[
+    ["Reverse Linked List","reverse-linked-list","Easy"],["Reverse Linked List II","reverse-linked-list-ii","Medium"],["Reverse Nodes in k-Group","reverse-nodes-in-k-group","Hard"],
+    ["Swap Nodes in Pairs","swap-nodes-in-pairs","Medium"],["Rotate List","rotate-list","Medium"],["Odd Even Linked List","odd-even-linked-list","Medium"],
+    ["Add Two Numbers","add-two-numbers","Medium"],["Merge Two Sorted Lists","merge-two-sorted-lists","Easy"],["Partition List","partition-list","Medium"],
+    ["Flatten a Multilevel Doubly Linked List","flatten-a-multilevel-doubly-linked-list","Medium"]]},
+  {id:"binary-search", idx:6, name:"Binary Search", tagline:"Halve the search space; works on arrays and answer-spaces alike.", color:["#B4FF6B","#7C5CFF"], problems:[
+    ["Binary Search","binary-search","Easy"],["Search in Rotated Sorted Array","search-in-rotated-sorted-array","Medium"],
+    ["Find First and Last Position of Element in Sorted Array","find-first-and-last-position-of-element-in-sorted-array","Medium"],
+    ["Search Insert Position","search-insert-position","Easy"],["Find Minimum in Rotated Sorted Array","find-minimum-in-rotated-sorted-array","Medium"],
+    ["Koko Eating Bananas","koko-eating-bananas","Medium"],["Capacity To Ship Packages Within D Days","capacity-to-ship-packages-within-d-days","Medium"],
+    ["Median of Two Sorted Arrays","median-of-two-sorted-arrays","Hard"],["Search a 2D Matrix","search-a-2d-matrix","Medium"],["Find Peak Element","find-peak-element","Medium"]]},
+  {id:"two-heaps", idx:7, name:"Two Heaps", tagline:"Balance a max-heap and min-heap to track a running median.", color:["#7C5CFF","#FF3EA5"], problems:[
+    ["Find Median from Data Stream","find-median-from-data-stream","Hard"],["Sliding Window Median","sliding-window-median","Hard"],["IPO","ipo","Hard"],
+    ["Minimum Cost to Hire K Workers","minimum-cost-to-hire-k-workers","Hard"],["Kth Largest Element in a Stream","kth-largest-element-in-a-stream","Easy"],
+    ["Last Stone Weight","last-stone-weight","Easy"],["Single-Threaded CPU","single-threaded-cpu","Medium"],["Reorganize String","reorganize-string","Medium"],
+    ["Process Tasks Using Servers","process-tasks-using-servers","Medium"],["Maximum Number of Events That Can Be Attended","maximum-number-of-events-that-can-be-attended","Hard"]]},
+  {id:"subsets", idx:8, name:"Subsets & Permutations", tagline:"Branch on include/exclude to enumerate the full search space.", color:["#22D3EE","#7C5CFF"], problems:[
+    ["Subsets","subsets","Medium"],["Subsets II","subsets-ii","Medium"],["Permutations","permutations","Medium"],["Permutations II","permutations-ii","Medium"],
+    ["Combinations","combinations","Medium"],["Combination Sum","combination-sum","Medium"],["Combination Sum II","combination-sum-ii","Medium"],
+    ["Letter Combinations of a Phone Number","letter-combinations-of-a-phone-number","Medium"],["Palindrome Partitioning","palindrome-partitioning","Medium"],
+    ["Generate Parentheses","generate-parentheses","Medium"]]},
+  {id:"top-k-elements", idx:9, name:"Top K Elements", tagline:"A size-K heap beats sorting the whole array.", color:["#B4FF6B","#22D3EE"], problems:[
+    ["Kth Largest Element in an Array","kth-largest-element-in-an-array","Medium"],["Top K Frequent Elements","top-k-frequent-elements","Medium"],
+    ["K Closest Points to Origin","k-closest-points-to-origin","Medium"],["Kth Smallest Element in a Sorted Matrix","kth-smallest-element-in-a-sorted-matrix","Medium"],
+    ["Sort Characters By Frequency","sort-characters-by-frequency","Medium"],["Top K Frequent Words","top-k-frequent-words","Medium"],
+    ["Find K Pairs with Smallest Sums","find-k-pairs-with-smallest-sums","Medium"],["Relative Ranks","relative-ranks","Easy"],
+    ["Minimum Cost to Connect Sticks","minimum-cost-to-connect-sticks","Medium"],["Furthest Building You Can Reach","furthest-building-you-can-reach","Medium"]]},
+  {id:"k-way-merge", idx:10, name:"K-way Merge", tagline:"Merge K sorted lists with one heap instead of repeated pairwise merges.", color:["#FF3EA5","#B4FF6B"], problems:[
+    ["Merge k Sorted Lists","merge-k-sorted-lists","Hard"],["Smallest Range Covering Elements from K Lists","smallest-range-covering-elements-from-k-lists","Hard"],
+    ["Merge Sorted Array","merge-sorted-array","Easy"],["Kth Smallest Number in Multiplication Table","kth-smallest-number-in-multiplication-table","Hard"],
+    ["Ugly Number II","ugly-number-ii","Medium"],["Super Ugly Number","super-ugly-number","Medium"],["Sort an Array","sort-an-array","Medium"],
+    ["Find K-th Smallest Pair Distance","find-k-th-smallest-pair-distance","Hard"],["Count of Range Sum","count-of-range-sum","Hard"],
+    ["Kth Smallest Product of Two Sorted Arrays","kth-smallest-product-of-two-sorted-arrays","Hard"]]},
+  {id:"dp-1d", idx:11, name:"Dynamic Programming \u2014 1D", tagline:"Optimal substructure over a single running index.", color:["#7C5CFF","#22D3EE"], problems:[
+    ["Climbing Stairs","climbing-stairs","Easy"],["House Robber","house-robber","Medium"],["House Robber II","house-robber-ii","Medium"],
+    ["Coin Change","coin-change","Medium"],["Longest Increasing Subsequence","longest-increasing-subsequence","Medium"],["Word Break","word-break","Medium"],
+    ["Decode Ways","decode-ways","Medium"],["Maximum Subarray","maximum-subarray","Medium"],["Jump Game","jump-game","Medium"],
+    ["Partition Equal Subset Sum","partition-equal-subset-sum","Medium"]]},
+  {id:"dp-2d", idx:12, name:"Dynamic Programming \u2014 2D", tagline:"Two dimensions of state \u2014 grids, strings, and knapsacks.", color:["#22D3EE","#FF3EA5"], problems:[
+    ["Unique Paths","unique-paths","Medium"],["Unique Paths II","unique-paths-ii","Medium"],["Minimum Path Sum","minimum-path-sum","Medium"],
+    ["Longest Common Subsequence","longest-common-subsequence","Medium"],["Edit Distance","edit-distance","Hard"],["Longest Palindromic Substring","longest-palindromic-substring","Medium"],
+    ["Interleaving String","interleaving-string","Medium"],["Distinct Subsequences","distinct-subsequences","Hard"],["Maximal Square","maximal-square","Medium"],
+    ["Regular Expression Matching","regular-expression-matching","Hard"]]},
+  {id:"greedy", idx:13, name:"Greedy", tagline:"Take the locally optimal move and prove it never hurts globally.", color:["#FF3EA5","#7C5CFF"], problems:[
+    ["Jump Game II","jump-game-ii","Medium"],["Gas Station","gas-station","Medium"],["Candy","candy","Hard"],["Task Scheduler","task-scheduler","Medium"],
+    ["Partition Labels","partition-labels","Medium"],["Queue Reconstruction by Height","queue-reconstruction-by-height","Medium"],["Assign Cookies","assign-cookies","Easy"],
+    ["Best Time to Buy and Sell Stock II","best-time-to-buy-and-sell-stock-ii","Medium"],["Remove Duplicate Letters","remove-duplicate-letters","Medium"],
+    ["Lemonade Change","lemonade-change","Easy"]]},
+  {id:"backtracking", idx:14, name:"Backtracking", tagline:"Explore, and undo the move the instant a branch fails.", color:["#B4FF6B","#FF3EA5"], problems:[
+    ["Word Search","word-search","Medium"],["N-Queens","n-queens","Hard"],["Sudoku Solver","sudoku-solver","Hard"],["Combination Sum III","combination-sum-iii","Medium"],
+    ["Restore IP Addresses","restore-ip-addresses","Medium"],["Word Search II","word-search-ii","Hard"],["Expression Add Operators","expression-add-operators","Hard"],
+    ["Letter Case Permutation","letter-case-permutation","Medium"],["Beautiful Arrangement","beautiful-arrangement","Medium"],["Matchsticks to Square","matchsticks-to-square","Medium"]]},
+  {id:"trie", idx:15, name:"Trie", tagline:"A prefix tree turns string lookups into O(length) walks.", color:["#7C5CFF","#B4FF6B"], problems:[
+    ["Implement Trie (Prefix Tree)","implement-trie-prefix-tree","Medium"],["Design Add and Search Words Data Structure","add-and-search-word-data-structure-design","Medium"],
+    ["Replace Words","replace-words","Medium"],["Design Search Autocomplete System","design-search-autocomplete-system","Hard"],
+    ["Longest Word in Dictionary","longest-word-in-dictionary","Medium"],["Maximum XOR of Two Numbers in an Array","maximum-xor-of-two-numbers-in-an-array","Medium"],
+    ["Palindrome Pairs","palindrome-pairs","Hard"],["Word Search II","word-search-ii","Hard"],["Concatenated Words","concatenated-words","Hard"],
+    ["Stream of Characters","stream-of-characters","Hard"]]},
+  {id:"graph-bfs", idx:16, name:"Graph \u2014 BFS", tagline:"Layer by layer, guaranteeing the shortest path in unweighted graphs.", color:["#22D3EE","#B4FF6B"], problems:[
+    ["Number of Islands","number-of-islands","Medium"],["Rotting Oranges","rotting-oranges","Medium"],["Word Ladder","word-ladder","Hard"],
+    ["Shortest Path in Binary Matrix","shortest-path-in-binary-matrix","Medium"],["01 Matrix","01-matrix","Medium"],["Open the Lock","open-the-lock","Medium"],
+    ["Minimum Genetic Mutation","minimum-genetic-mutation","Medium"],["Snakes and Ladders","snakes-and-ladders","Medium"],["Bus Routes","bus-routes","Hard"],
+    ["As Far from Land as Possible","as-far-from-land-as-possible","Medium"]]},
+  {id:"graph-dfs", idx:17, name:"Graph \u2014 DFS", tagline:"Go deep first, backtrack on dead ends, mark visited to avoid loops.", color:["#FF3EA5","#22D3EE"], problems:[
+    ["Number of Provinces","number-of-provinces","Medium"],["Course Schedule","course-schedule","Medium"],["Course Schedule II","course-schedule-ii","Medium"],
+    ["Clone Graph","clone-graph","Medium"],["Pacific Atlantic Water Flow","pacific-atlantic-water-flow","Medium"],["Surrounded Regions","surrounded-regions","Medium"],
+    ["All Paths From Source to Target","all-paths-from-source-to-target","Medium"],["Keys and Rooms","keys-and-rooms","Medium"],["Max Area of Island","max-area-of-island","Medium"],
+    ["Number of Closed Islands","number-of-closed-islands","Medium"]]},
+  {id:"union-find", idx:18, name:"Union Find", tagline:"Merge connected components with near-constant time queries.", color:["#B4FF6B","#7C5CFF"], problems:[
+    ["Graph Valid Tree","graph-valid-tree","Medium"],["Redundant Connection","redundant-connection","Medium"],["Accounts Merge","accounts-merge","Medium"],
+    ["Number of Operations to Make Network Connected","number-of-operations-to-make-network-connected","Medium"],
+    ["Most Stones Removed with Same Row or Column","most-stones-removed-with-same-row-or-column","Medium"],
+    ["Satisfiability of Equality Equations","satisfiability-of-equality-equations","Medium"],["Smallest String With Swaps","smallest-string-with-swaps","Medium"],
+    ["Evaluate Division","evaluate-division","Medium"],["Regions Cut By Slashes","regions-cut-by-slashes","Medium"],["Path With Minimum Effort","path-with-minimum-effort","Medium"]]},
+  {id:"topological-sort", idx:19, name:"Topological Sort", tagline:"Order nodes so every edge points forward \u2014 only possible on a DAG.", color:["#7C5CFF","#FF3EA5"], problems:[
+    ["Alien Dictionary","alien-dictionary","Hard"],["Minimum Height Trees","minimum-height-trees","Medium"],["Parallel Courses","parallel-courses","Medium"],
+    ["Find Eventual Safe States","find-eventual-safe-states","Medium"],["Sort Items by Groups Respecting Dependencies","sort-items-by-groups-respecting-dependencies","Hard"],
+    ["Course Schedule","course-schedule","Medium"],["Course Schedule II","course-schedule-ii","Medium"],["Longest Increasing Path in a Matrix","longest-increasing-path-in-a-matrix","Hard"],
+    ["All Ancestors of a Node in a Directed Acyclic Graph","all-ancestors-of-a-node-in-a-directed-acyclic-graph","Medium"],["Course Schedule IV","course-schedule-iv","Medium"]]},
+  {id:"stack", idx:20, name:"Stack", tagline:"LIFO order for matching, parsing, and undo-style problems.", color:["#22D3EE","#7C5CFF"], problems:[
+    ["Valid Parentheses","valid-parentheses","Easy"],["Min Stack","min-stack","Medium"],["Evaluate Reverse Polish Notation","evaluate-reverse-polish-notation","Medium"],
+    ["Daily Temperatures","daily-temperatures","Medium"],["Next Greater Element I","next-greater-element-i","Easy"],["Largest Rectangle in Histogram","largest-rectangle-in-histogram","Hard"],
+    ["Decode String","decode-string","Medium"],["Basic Calculator","basic-calculator","Hard"],["Remove K Digits","remove-k-digits","Medium"],["Asteroid Collision","asteroid-collision","Medium"]]},
+  {id:"monotonic-stack", idx:21, name:"Monotonic Stack", tagline:"Keep the stack strictly increasing or decreasing to answer next-greater queries fast.", color:["#FF3EA5","#B4FF6B"], problems:[
+    ["Next Greater Element II","next-greater-element-ii","Medium"],["Sum of Subarray Minimums","sum-of-subarray-minimums","Medium"],["Online Stock Span","online-stock-span","Medium"],
+    ["Maximal Rectangle","maximal-rectangle","Hard"],["132 Pattern","132-pattern","Medium"],["Car Fleet","car-fleet","Medium"],
+    ["Final Prices With a Special Discount in a Shop","final-prices-with-a-special-discount-in-a-shop","Easy"],
+    ["Remove All Adjacent Duplicates in String","remove-all-adjacent-duplicates-in-string","Easy"],["Shortest Unsorted Continuous Subarray","shortest-unsorted-continuous-subarray","Medium"],
+    ["Next Greater Element III","next-greater-element-iii","Medium"]]},
+  {id:"bit-manipulation", idx:22, name:"Bit Manipulation", tagline:"XOR, shifts, and masks solve some problems in O(1) space.", color:["#B4FF6B","#22D3EE"], problems:[
+    ["Single Number","single-number","Easy"],["Single Number II","single-number-ii","Medium"],["Single Number III","single-number-iii","Medium"],
+    ["Number of 1 Bits","number-of-1-bits","Easy"],["Counting Bits","counting-bits","Easy"],["Reverse Bits","reverse-bits","Easy"],
+    ["Sum of Two Integers","sum-of-two-integers","Medium"],["Bitwise AND of Numbers Range","bitwise-and-of-numbers-range","Medium"],["Power of Two","power-of-two","Easy"],
+    ["Gray Code","gray-code","Medium"]]},
+  {id:"matrix-traversal", idx:23, name:"Matrix Traversal", tagline:"Rows, columns, and diagonals \u2014 moving through a grid with intent.", color:["#7C5CFF","#22D3EE"], problems:[
+    ["Rotate Image","rotate-image","Medium"],["Spiral Matrix","spiral-matrix","Medium"],["Spiral Matrix II","spiral-matrix-ii","Medium"],["Set Matrix Zeroes","set-matrix-zeroes","Medium"],
+    ["Search a 2D Matrix II","search-a-2d-matrix-ii","Medium"],["Game of Life","game-of-life","Medium"],["Diagonal Traverse","diagonal-traverse","Medium"],
+    ["Transpose Matrix","transpose-matrix","Easy"],["Flood Fill","flood-fill","Easy"]]},
+  {id:"tree-bfs-dfs", idx:24, name:"Tree \u2014 BFS / DFS", tagline:"Every tree problem is a graph traversal wearing a hierarchy.", color:["#22D3EE","#FF3EA5"], problems:[
+    ["Binary Tree Level Order Traversal","binary-tree-level-order-traversal","Medium"],["Binary Tree Zigzag Level Order Traversal","binary-tree-zigzag-level-order-traversal","Medium"],
+    ["Maximum Depth of Binary Tree","maximum-depth-of-binary-tree","Easy"],["Validate Binary Search Tree","validate-binary-search-tree","Medium"],
+    ["Lowest Common Ancestor of a Binary Tree","lowest-common-ancestor-of-a-binary-tree","Medium"],["Binary Tree Right Side View","binary-tree-right-side-view","Medium"],
+    ["Diameter of Binary Tree","diameter-of-binary-tree","Easy"],["Path Sum II","path-sum-ii","Medium"],["Serialize and Deserialize Binary Tree","serialize-and-deserialize-binary-tree","Hard"],
+    ["Kth Smallest Element in a BST","kth-smallest-element-in-a-bst","Medium"]]}
+];
+
+let solved = {};
+try{ solved = JSON.parse(localStorage.getItem('pf_solved') || '{}'); }catch(e){ solved = {}; }
+function saveSolved(){ try{ localStorage.setItem('pf_solved', JSON.stringify(solved)); }catch(e){} }
+
+const track = document.getElementById('marqueeTrack');
+track.innerHTML = [...patterns, ...patterns].map(p =>
+  `<span><span class="idx">arr[${String(p.idx).padStart(2,'0')}]</span> ${p.name} <span class="sep">///</span></span>`
+).join('');
+
+/* company logos strip (text-mark badges, not trademarked art) */
+const companies = [
+  ["Amazon","#FF9900"], ["Google","#4285F4"], ["Meta","#0668E1"], ["Microsoft","#00A4EF"],
+  ["Apple","#A2AAAD"], ["Netflix","#E50914"], ["Uber","#ffffff"], ["Bloomberg","#22D3EE"]
+];
+const logosRow = document.getElementById('logosRow');
+logosRow.innerHTML = companies.map(([name,color]) =>
+  `<span class="logo-chip glass"><span class="dot" style="background:${color};box-shadow:0 0 8px 1px ${color};"></span>${name}</span>`
+).join('');
+requestAnimationFrame(() => {
+  ScrollTrigger.batch('.logo-chip', {
+    start:'top 95%',
+    onEnter: batch => gsap.to(batch, {opacity:1, y:0, stagger:.06, duration:.5, ease:'power3.out'}),
+    once:true
+  });
+});
+
+/* difficulty lookup: slug -> difficulty, and slug -> patternId */
+const diffLookup = {};
+const patternOf = {};
+patterns.forEach(p => p.problems.forEach(([, slug, diff]) => { diffLookup[slug] = diff; patternOf[slug] = p.id; }));
+
+/* ghost preview grid for logged-out visitors (static, non-interactive) */
+const ghostGrid = document.getElementById('ghostGrid');
+ghostGrid.innerHTML = patterns.slice(0,6).map(p => `
+  <div class="card glass" style="--c1:${p.color[0]};--c2:${p.color[1]};">
+    <div class="glow" style="background:linear-gradient(135deg,${p.color[0]},${p.color[1]});"></div>
+    <div class="idx mono">arr[${String(p.idx).padStart(2,'0')}]</div>
+    <h3 class="display">${p.name}</h3>
+    <p>${p.tagline}</p>
+    <div class="bar-track"><div class="bar-fill" style="width:35%;background:linear-gradient(90deg,${p.color[0]},${p.color[1]});"></div></div>
+    <div class="card-foot"><span>·· % complete</span><span>${p.problems.length} problems</span></div>
+  </div>
+`).join('');
+gsap.set('.ghost-grid .card', {opacity:1, y:0});
+
+const gridEl = document.getElementById('patternGrid');
+function buildGrid(){
+  gridEl.innerHTML = '';
+  patterns.forEach((p,i) => {
+    const solvedCount = p.problems.filter(pr => solved[pr[1]]).length;
+    const pct = Math.round((solvedCount / p.problems.length) * 100);
+    const card = document.createElement('div');
+    card.className = 'card glass';
+    card.style.setProperty('--c1', p.color[0]);
+    card.style.setProperty('--c2', p.color[1]);
+    card.onclick = () => openDetail(p.id);
+    card.innerHTML = `
+      <div class="card-light"></div>
+      <div class="card-orb"><i></i></div>
+      <div class="glow" style="background:linear-gradient(135deg,${p.color[0]},${p.color[1]});"></div>
+      <div class="idx mono">arr[${String(p.idx).padStart(2,'0')}]</div>
+      <div class="oscore mono">O(${solvedCount}/${p.problems.length})</div>
+      <h3 class="display">${p.name}</h3>
+      <p>${p.tagline}</p>
+      <div class="bar-track"><div class="bar-fill" data-pct="${pct}" style="background:linear-gradient(90deg,${p.color[0]},${p.color[1]},${p.color[0]});"></div></div>
+      <div class="card-foot"><span>${pct}% complete</span><span>${p.problems.length} problems</span></div>
+    `;
+    gridEl.appendChild(card);
+    initTilt(card);
+  });
+  requestAnimationFrame(() => {
+    ScrollTrigger.batch('.card', {
+      start: 'top 92%',
+      onEnter: batch => gsap.to(batch, {opacity:1, y:0, stagger:.06, duration:.5, ease:'power3.out'}),
+      once: true
+    });
+    document.querySelectorAll('#patternGrid .bar-fill[data-pct]').forEach(el => {
+      gsap.delayedCall(.3, () => el.style.width = el.getAttribute('data-pct') + '%');
+    });
+  });
+}
+
+/* ================= PREMIUM: 3D TILT + CURSOR SPOTLIGHT ================= */
+function initTilt(card){
+  const rotX = gsap.quickTo(card, 'rotationX', {duration:.5, ease:'power3.out'});
+  const rotY = gsap.quickTo(card, 'rotationY', {duration:.5, ease:'power3.out'});
+  const liftY = gsap.quickTo(card, 'y', {duration:.5, ease:'power3.out'});
+  gsap.set(card, {transformPerspective:900});
+
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;   // 0..1
+    const py = (e.clientY - rect.top) / rect.height;    // 0..1
+    const maxTilt = 14;
+    rotY((px - 0.5) * maxTilt * 2);
+    rotX(-(py - 0.5) * maxTilt * 2);
+    liftY(-6);
+    card.style.setProperty('--mx', (px * 100) + '%');
+    card.style.setProperty('--my', (py * 100) + '%');
+    card.classList.add('tilting');
+  });
+
+  card.addEventListener('mouseleave', () => {
+    rotX(0); rotY(0); liftY(0);
+    card.classList.remove('tilting');
+  });
+}
+
+function openDetail(id){
+  const p = patterns.find(x => x.id === id);
+  document.getElementById('patterns').style.display = 'none';
+  const section = document.getElementById('detailSection');
+  section.style.display = 'block';
+  document.getElementById('detailIdx').textContent = `arr[${String(p.idx).padStart(2,'0')}]`;
+  document.getElementById('detailName').textContent = p.name;
+  renderProblemList(p);
+  section.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function closeDetail(){
+  document.getElementById('detailSection').style.display = 'none';
+  document.getElementById('patterns').style.display = 'block';
+  document.getElementById('patterns').scrollIntoView({behavior:'smooth', block:'start'});
+  buildGrid();
+}
+
+function renderProblemList(p){
+  const list = document.getElementById('problemList');
+  list.innerHTML = '';
+  const solvedCount = () => p.problems.filter(pr => solved[pr[1]]).length;
+  function updateHeader(){
+    const sc = solvedCount();
+    document.getElementById('detailProgress').textContent = `${sc}/${p.problems.length} solved`;
+    document.getElementById('detailBar').style.width = Math.round((sc/p.problems.length)*100) + '%';
+  }
+  p.problems.forEach((pr, i) => {
+    const [title, slug, diff] = pr;
+    const li = document.createElement('li');
+    li.className = 'prow' + (solved[slug] ? ' solved' : '');
+    li.innerHTML = `
+      <div class="check ${solved[slug] ? 'on' : ''}" data-slug="${slug}">✓</div>
+      <span class="pi">${String(i+1).padStart(2,'0')}</span>
+      <span class="ptitle">${title}</span>
+      <span class="diff ${diff}">${diff}</span>
+      <a class="ext" href="https://leetcode.com/problems/${slug}/" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">↗</a>
+    `;
+    const chk = li.querySelector('.check');
+    chk.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const nowSolved = !solved[slug];
+      solved[slug] = nowSolved;
+      saveSolved();
+      recordStreak(nowSolved);
+      chk.classList.add('verifying');
+      gsap.fromTo(chk, {scale:.7}, {scale:1, duration:.35, ease:'back.out(2)'});
+      setTimeout(() => chk.classList.remove('verifying'), 650);
+      chk.classList.toggle('on');
+      li.classList.toggle('solved');
+      updateHeader();
+      refreshDashboard();
+    });
+    list.appendChild(li);
+  });
+  updateHeader();
+}
+
+/* ================= SCROLL REVEALS ================= */
+gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.batch('.feat-card', {
+  start:'top 90%',
+  onEnter: batch => gsap.to(batch, {opacity:1, y:0, stagger:.1, duration:.6, ease:'power3.out'}),
+  once:true
+});
+gsap.set('.feat-card', {y:20});
+ScrollTrigger.batch('.step-row', {
+  start:'top 88%',
+  onEnter: batch => gsap.to(batch, {opacity:1, x:0, stagger:.12, duration:.6, ease:'power3.out'}),
+  once:true
+});
+gsap.set('.step-row', {x:-24});
+
+/* ================= LOGIN MODAL + LOGARITHMIC SPIRAL ================= */
+const overlay = document.getElementById('loginOverlay');
+const canvas = document.getElementById('spiralCanvas');
+let spiralStarted = false;
+
+function drawSpiral(){
+  if (spiralStarted) return;
+  spiralStarted = true;
+  const ctx = canvas.getContext('2d');
+  let w,h;
+  function resize(){ w = canvas.width = canvas.offsetWidth; h = canvas.height = canvas.offsetHeight; }
+  resize(); window.addEventListener('resize', resize);
+  let t = 0;
+  const colors = ['#7C5CFF','#22D3EE','#FF3EA5','#B4FF6B'];
+  function frame(){
+    if (!overlay.classList.contains('open')) { requestAnimationFrame(frame); return; }
+    ctx.clearRect(0,0,w,h);
+    ctx.save();
+    ctx.translate(w/2, h*0.38);
+    for (let i=0; i<200; i++){
+      const angle = 0.16*i + t;
+      const radius = 2.2*Math.pow(1.05, i);
+      if (radius > Math.max(w,h)*0.75) break;
+      const x = radius*Math.cos(angle);
+      const y = radius*Math.sin(angle);
+      ctx.beginPath();
+      ctx.arc(x, y, 2, 0, Math.PI*2);
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.globalAlpha = 0.5;
+      ctx.fill();
+    }
+    ctx.restore();
+    t += 0.0035;
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+function openModal(mode){
+  overlay.classList.add('open');
+  drawSpiral();
+  gsap.fromTo('.login-card', {opacity:0, scale:.94, y:16}, {opacity:1, scale:1, y:0, duration:.45, ease:'power3.out'});
+  setModalMode(mode);
+}
+function closeModal(){
+  gsap.to('.login-card', {opacity:0, scale:.96, y:10, duration:.25, onComplete:() => overlay.classList.remove('open')});
+}
+function setModalMode(mode){
+  const title = document.getElementById('modalTitle');
+  const sub = document.getElementById('modalSub');
+  const submit = document.getElementById('submitLogin');
+  const switchTxt = document.getElementById('modalSwitch');
+  const nameField = document.getElementById('nameField');
+  if (mode === 'signup'){
+    title.textContent = 'Create your account';
+    sub.textContent = '249 problems, 25 patterns, one dashboard.';
+    submit.textContent = 'Create account';
+    nameField.style.display = 'block';
+    switchTxt.innerHTML = 'Already have an account? <a href="#" id="switchLink">Sign in</a>';
+  } else {
+    title.textContent = 'Welcome back';
+    sub.textContent = 'Sign in to pick up where you left off.';
+    submit.textContent = 'Sign in';
+    nameField.style.display = 'none';
+    switchTxt.innerHTML = 'No account yet? <a href="#" id="switchLink">Create one</a>';
+  }
+  document.getElementById('switchLink').onclick = (e) => {
+    e.preventDefault();
+    setModalMode(mode === 'signup' ? 'signin' : 'signup');
+  };
+}
+
+document.getElementById('openLogin').onclick = e => { e.preventDefault(); openModal('signin'); };
+document.getElementById('openSignup').onclick = e => { e.preventDefault(); openModal('signup'); };
+document.getElementById('heroSignup').onclick = e => { e.preventDefault(); openModal('signup'); };
+document.getElementById('ctaSignup').onclick = e => { e.preventDefault(); openModal('signup'); };
+document.getElementById('closeLogin').onclick = closeModal;
+overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+
+document.getElementById('submitLogin').addEventListener('click', () => {
+  signInAs('Raushan');
+  closeModal();
+});
+function fakeLogin(provider){
+  signInAs('Raushan');
+  closeModal();
+}
+
+document.getElementById('unlockBtn').onclick = () => openModal('signup');
+
+/* ================= STREAK TRACKING ================= */
+let streak = {};
+try{ streak = JSON.parse(localStorage.getItem('pf_streak') || '{}'); }catch(e){ streak = {}; }
+function saveStreak(){ try{ localStorage.setItem('pf_streak', JSON.stringify(streak)); }catch(e){} }
+function todayKey(){ return new Date().toISOString().slice(0,10); }
+function recordStreak(didSolve){
+  const k = todayKey();
+  if (didSolve){ streak[k] = (streak[k] || 0) + 1; }
+  else { streak[k] = Math.max(0, (streak[k] || 1) - 1); if (!streak[k]) delete streak[k]; }
+  saveStreak();
+}
+
+/* ================= SCORE CHIPS ================= */
+function renderScoreRow(){
+  const solvedSlugs = Object.keys(solved).filter(s => solved[s]);
+  const total = solvedSlugs.length;
+  const counts = { Easy:0, Medium:0, Hard:0 };
+  solvedSlugs.forEach(s => { const d = diffLookup[s]; if (d) counts[d]++; });
+  const row = document.getElementById('scoreRow');
+  row.innerHTML = `
+    <div class="score-chip glass-strong total"><div class="sc-num text-gradient">${total}<span style="font-size:15px;color:var(--muted);">/249</span></div><div class="sc-lbl">total solved</div></div>
+    <div class="score-chip glass"><div class="sc-num" style="color:var(--lime);">${counts.Easy}</div><div class="sc-lbl">easy</div></div>
+    <div class="score-chip glass"><div class="sc-num" style="color:var(--cyan);">${counts.Medium}</div><div class="sc-lbl">medium</div></div>
+    <div class="score-chip glass"><div class="sc-num" style="color:var(--magenta);">${counts.Hard}</div><div class="sc-lbl">hard</div></div>
+  `;
+  gsap.fromTo('.score-chip', {opacity:0, y:10}, {opacity:1, y:0, stagger:.06, duration:.4, ease:'power3.out'});
+}
+
+/* ================= STREAK CALENDAR (LeetCode-style monthly heatmap) ================= */
+function renderStreakCalendar(){
+  const now = new Date();
+  const year = now.getFullYear(), month = now.getMonth();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const firstWeekday = new Date(year, month, 1).getDay();
+  const monthLabel = now.toLocaleString('default', {month:'long', year:'numeric'});
+  document.getElementById('streakMonthLabel').textContent = `${monthLabel} activity`;
+
+  const grid = document.getElementById('streakGrid');
+  grid.innerHTML = '';
+  let monthTotal = 0;
+
+  for (let i=0; i<firstWeekday; i++){
+    const filler = document.createElement('div');
+    filler.className = 'streak-box';
+    filler.style.background = 'transparent';
+    filler.style.opacity = '1';
+    grid.appendChild(filler);
+  }
+
+  for (let d=1; d<=daysInMonth; d++){
+    const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const count = streak[key] || 0;
+    monthTotal += count;
+    const level = count === 0 ? 0 : count === 1 ? 1 : count <= 3 ? 2 : 3;
+    const box = document.createElement('div');
+    box.className = `streak-box l${level}`;
+    box.setAttribute('data-tip', `${count} solved · ${monthLabel.split(' ')[0]} ${d}`);
+    grid.appendChild(box);
+  }
+
+  document.getElementById('streakTotal').textContent = `${monthTotal} problem${monthTotal === 1 ? '' : 's'}`;
+  gsap.to('.streak-box', {opacity:1, scale:1, stagger:{each:.008, from:'start'}, duration:.35, ease:'power2.out'});
+}
+
+function refreshDashboard(){
+  renderScoreRow();
+  renderStreakCalendar();
+}
+
+/* ================= AUTH GATE ================= */
+function showDashboard(){
+  document.getElementById('lockedTeaser').style.display = 'none';
+  const dash = document.getElementById('dashboardArea');
+  dash.style.display = 'block';
+  buildGrid();
+  refreshDashboard();
+  gsap.fromTo(dash, {opacity:0, y:16}, {opacity:1, y:0, duration:.5, ease:'power3.out'});
+}
+function showLockedTeaser(){
+  document.getElementById('lockedTeaser').style.display = 'block';
+  document.getElementById('dashboardArea').style.display = 'none';
+}
+
+/* ================= SIGNED-IN STATE (name greeting, not email) ================= */
+function signInAs(name){
+  try{ localStorage.setItem('pf_user', name); }catch(e){}
+  const navRight = document.getElementById('navRight');
+  navRight.querySelectorAll('#openLogin, #openSignup').forEach(el => el.remove());
+  if (!document.getElementById('userChip')){
+    const initials = name.slice(0,2).toUpperCase();
+    const chip = document.createElement('div');
+    chip.id = 'userChip';
+    chip.style.cssText = 'display:flex; align-items:center; gap:8px; padding:5px 12px 5px 5px; border-radius:999px; background:var(--glass-bg); border:1px solid var(--glass-border);';
+    chip.innerHTML = `<span class="avatar">${initials}</span><span style="font-size:13px;">Hey, <b>${name}</b> 👋</span>`;
+    navRight.appendChild(chip);
+    gsap.fromTo(chip, {opacity:0, scale:.9}, {opacity:1, scale:1, duration:.4, ease:'back.out(1.7)'});
+  }
+  document.getElementById('dashName').textContent = name;
+  showDashboard();
+  document.getElementById('dashboardArea').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* restore session on reload */
+(function initAuth(){
+  let savedUser = null;
+  try{ savedUser = localStorage.getItem('pf_user'); }catch(e){}
+  if (savedUser){
+    const navRight = document.getElementById('navRight');
+    navRight.querySelectorAll('#openLogin, #openSignup').forEach(el => el.remove());
+    const initials = savedUser.slice(0,2).toUpperCase();
+    const chip = document.createElement('div');
+    chip.id = 'userChip';
+    chip.style.cssText = 'display:flex; align-items:center; gap:8px; padding:5px 12px 5px 5px; border-radius:999px; background:var(--glass-bg); border:1px solid var(--glass-border);';
+    chip.innerHTML = `<span class="avatar">${initials}</span><span style="font-size:13px;">Hey, <b>${savedUser}</b> 👋</span>`;
+    navRight.appendChild(chip);
+    document.getElementById('dashName').textContent = savedUser;
+    showDashboard();
+  } else {
+    showLockedTeaser();
+  }
+})();
+
+</script>
+</body>
+</html>
