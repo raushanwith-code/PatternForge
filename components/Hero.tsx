@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowUpRight, Sparkles } from "lucide-react";
+import { ArrowUpRight, Sparkles, ChevronDown } from "lucide-react";
+import RotatingHeadline from "@/components/RotatingHeadline";
 
 const container = {
   hidden: {},
@@ -116,6 +117,10 @@ export default function Hero({
           <Sparkles size={12} /> 25 patterns · {total} curated problems
         </motion.span>
 
+        <motion.div variants={item} className="mt-4">
+          <RotatingHeadline />
+        </motion.div>
+
         <motion.h1
           variants={item}
           className="mt-6 font-display text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl"
@@ -166,6 +171,22 @@ export default function Hero({
               <p className="font-mono text-xs text-muted">{l}</p>
             </div>
           ))}
+        </motion.div>
+
+        <motion.div
+          variants={item}
+          className="mt-8 flex flex-col items-center gap-1 lg:items-start"
+        >
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
+            scroll to explore
+          </span>
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            className="flex h-8 w-8 items-center justify-center rounded-full glass text-cyan"
+          >
+            <ChevronDown size={16} />
+          </motion.div>
         </motion.div>
       </motion.div>
 

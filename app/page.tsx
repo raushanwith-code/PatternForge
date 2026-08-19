@@ -3,6 +3,7 @@ import AuroraBackground from "@/components/AuroraBackground";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import PatternCard from "@/components/PatternCard";
+import CompanyLogos from "@/components/CompanyLogos";
 import { patterns, totalProblems } from "@/data/patterns";
 import { ArrowUpRight } from "lucide-react";
 
@@ -25,6 +26,8 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <CompanyLogos />
 
       {/* pattern grid preview */}
       <section className="mx-auto mt-24 w-[94%] max-w-6xl pb-32">
