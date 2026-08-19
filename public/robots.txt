@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://patternforge-ehdt.onrender.com
+
+# Sitemaps
+Sitemap: https://patternforge-ehdt.onrender.com/sitemap.xml
