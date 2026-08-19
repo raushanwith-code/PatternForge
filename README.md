@@ -1,5 +1,7 @@
 # PatternForge — DSA Nexus 2099
 
+🚀 **Live Demo:** [patternforge-ehdt.onrender.com](https://patternforge-ehdt.onrender.com)
+
 A full-stack Next.js 14 e-learning platform for interview prep: **25 DSA patterns**,
 **249 curated LeetCode problems** (max 15 per pattern), real authentication, per-user
 progress tracking, and a glassmorphic, aurora-animated "2099" UI built with
@@ -41,13 +43,10 @@ npm run db:push
 
 # 4. Run the dev server
 npm run dev
-```
+Visit http://localhost:3000.
 
-Visit `http://localhost:3000`.
-
-## Project structure
-
-```
+Project structure
+Code
 app/
   page.tsx                  → landing page (hero, marquee, pattern preview)
   (auth)/signin/page.tsx    → sign in
@@ -63,21 +62,3 @@ components/
 data/patterns.ts            → the 25 patterns × 249 problems dataset
 lib/auth.ts, lib/prisma.ts
 prisma/schema.prisma
-```
-
-## Adding or editing problems
-
-Everything lives in `data/patterns.ts` — each pattern is a plain object with an
-`id`, `name`, `tagline`, and a `problems` array of `{ title, slug, difficulty }`.
-The `slug` maps directly to `https://leetcode.com/problems/<slug>/`, so adding a
-new problem is a one-line change; no database migration needed.
-
-## Notes
-
-- Auth uses email + password (Credentials provider) so the app runs fully
-  offline/self-hosted with zero third-party keys. Swap in Google/GitHub OAuth
-  providers in `lib/auth.ts` if you want social login later.
-- SQLite is fine for local dev and small deployments. For production at scale,
-  change the `datasource` provider in `prisma/schema.prisma` to `postgresql`
-  and point `DATABASE_URL` at a real Postgres instance — no other code changes
-  needed.
