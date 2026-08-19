@@ -26,6 +26,10 @@ export const metadata: Metadata = {
   title: "PatternForge // DSA Nexus 2099",
   description:
     "249 curated LeetCode problems, sorted into 25 patterns. Learn the pattern once, solve the category forever.",
+  // 👇 Google Search Console verification meta tag
+  verification: {
+    google: "i4c4g7pu5VpsCqLyG1VVoGLTf57xG5OF6EljxmzTI0Q",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
