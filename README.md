@@ -1,5 +1,10 @@
-⚡ PatternForge — DSA Nexus 2099
-🌐 Live Demo: patternforge-ehdt.onrender.com
+# ⚡🚀 **PatternForge — DSA Nexus 2099**
+
+🌐 **Live Demo:** 👉 [patternforge-ehdt.onrender.com](https://patternforge-ehdt.onrender.com)
+
+> 🧠 **25 DSA Patterns · 249 Curated LeetCode Problems**  
+> 🔐 Real Authentication · 📊 Progress Tracking · 🎨 Futuristic Glassmorphic UI
+
 
 Stop memorizing solutions. Start recognizing patterns.  
 25 core DSA patterns · 249 curated LeetCode problems · Real progress tracking
