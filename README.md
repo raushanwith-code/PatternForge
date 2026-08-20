@@ -1,38 +1,38 @@
 ⚡ PatternForge — DSA Nexus 2099
-🚀 Live Demo: patternforge-ehdt.onrender.com
+🌐 Live Demo: patternforge-ehdt.onrender.com
 
-Stop memorizing solutions. Start recognizing patterns.
-Stop grinding random problems. Start forging patterns.
+Stop memorizing solutions. Start recognizing patterns.  
+25 core DSA patterns · 249 curated LeetCode problems · Real progress tracking
 
-🛠️ Tech Stack
-⚛️ Next.js 14 — App Router, Server Components, Middleware
+🚀 Tech Stack
+Next.js 14 — App Router, Server Components, Middleware
 
-🔐 NextAuth.js — Email/password auth (bcrypt + JWT)
+NextAuth.js — Credentials auth (bcrypt + JWT)
 
-🗄️ Prisma + SQLite — Zero‑config local DB
+Prisma + SQLite — Local DB, zero config
 
-🎨 Tailwind CSS — Glassmorphism + aurora gradients
+Tailwind CSS — Glassmorphism + aurora gradients
 
-🎬 Framer Motion — Page‑load choreography, scroll reveals
+Framer Motion — Page transitions, scroll reveals
 
-✅ Zod — API route validation
+Zod — API validation
 
-🔔 react-hot-toast — Success/error notifications
+react-hot-toast — Toast notifications
 
 ✨ Features
-🔐 Secure auth: Sign up, Sign in, protected /dashboard/* routes
+🔐 Secure auth (sign up / sign in / protected routes)
 
-🧠 25 DSA patterns × 249 LeetCode problems (max 15 per pattern)
+🧠 25 patterns × 249 LeetCode problems
 
-📊 Per‑user progress tracking with animated progress bars
+📊 Per‑user progress tracking (persisted in DB)
 
-🎨 Futuristic 2099 UI — glass panels, aurora background, marquee, hover states
+🎨 Futuristic 2099 UI — glass panels, aurora background, hover states
 
-⚠️ Robust error handling: error.tsx, not-found.tsx, loading.tsx, inline form errors
+⚠️ Robust error handling (error.tsx, not-found.tsx, loading.tsx)
 
-♿ Accessibility: focus rings, ARIA labels, reduced motion support
+♿ Accessibility: focus rings, ARIA labels, reduced motion
 
-🚀 Getting Started
+🛠️ Getting Started
 bash
 # 1. Install dependencies
 npm install
@@ -51,10 +51,10 @@ npm run dev
 📂 Project Structure
 Code
 app/
-  page.tsx                  → landing page (hero, marquee, preview)
+  page.tsx                  → landing page
   (auth)/signin/page.tsx    → sign in
   (auth)/signup/page.tsx    → sign up
-  dashboard/page.tsx        → pattern overview grid (protected)
+  dashboard/page.tsx        → pattern overview (protected)
   dashboard/[pattern]/page.tsx → problem list (protected)
   api/auth/[...nextauth]/   → NextAuth handler
   api/auth/register/        → sign-up endpoint
@@ -65,23 +65,12 @@ components/
 data/patterns.ts            → 25 patterns × 249 problems dataset
 lib/auth.ts, lib/prisma.ts
 prisma/schema.prisma
-🧩 Dataset
-Each pattern has:
-
-id, name, tagline
-
-problems[] → { title, slug, difficulty }
-
-Slug maps directly to: https://leetcode.com/problems/<slug>/
-
-Easy to extend — just edit data/patterns.ts
-
 🌐 Deployment Notes
-🛡️ Auth uses email + password → fully offline/self‑hosted
+🛡️ Offline email/password auth
 
-🔄 Swap in Google/GitHub OAuth later if needed
+🗄️ SQLite for dev → PostgreSQL for scale
 
-🗄️ SQLite for dev/small deploys → switch to PostgreSQL for scale
+🔄 Easy swap to OAuth providers later
 
-💡 PatternForge is not just another DSA platform — it’s a futuristic coding dojo.  
+💡 PatternForge = futuristic coding dojo.  
 Aurora vibes + glassmorphic UI + real progress tracking = 🔥 startup‑grade product.
